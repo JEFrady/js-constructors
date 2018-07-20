@@ -103,13 +103,14 @@ Spellcaster.prototype.inflictDamage = function(damage) {
    */
 
   Spellcaster.prototype.spendMana = function(cost) {
-    if (this.mana - cost <= 0) {
-        return false
+    if (this.mana - cost >= 0) {
+        this.mana = this.mana - cost;
+        return true
     }
     else {
-        this.mana = this.mana - cost;
-        return true;
+        return false;
     }
+
 }
   /**
    * @method spendMana
@@ -148,11 +149,12 @@ Spellcaster.prototype.inflictDamage = function(damage) {
    * @return {boolean}                    Whether the spell was successfully cast.
    */
 Spellcaster.prototype.invoke = function(spell, target) {
-    if (spell instanceof Spell) {
+    if (spell instanceof Spell || spell instanceof DamageSpell) {
         if (spell instanceof DamageSpell) {
             if (target instanceof Spellcaster) {
                 if (this.mana >= spell.cost) {
-                    this.mana = this.mana - spell.cost;
+                    this.spendMana(spell.cost);
+                    target.inflictDamage(spell.damage);
                     return true;
                 }
                 else {
@@ -164,10 +166,17 @@ Spellcaster.prototype.invoke = function(spell, target) {
             }
         }
         else {
-            return false;
+            if (this.mana >= spell.cost) {
+                // this.mana = this.mana - spell.cost;
+                this.spendMana(spell.cost);
+                return true;
+            }
+            else {
+                return false;
+            }
         }
     }
     else {
         return false;
     }
-}    
+}
